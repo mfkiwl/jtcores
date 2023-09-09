@@ -212,7 +212,7 @@ assign cpu_AB = A[12:0];
 
 reg [7:0] cpu_din;
 
-always @(*) begin
+always @(*) begin // do not register
     case( 1'b1 )
         ram_cs    : cpu_din = ram_dout;
         char_cs   : cpu_din = char_dout;
@@ -260,10 +260,11 @@ jtframe_ff #(.W(3)) u_irq(
     .qn      ( { nNMI, nFIRQ, nIRQ }            )
 );
 
-jtframe_sys6809 #(.RAM_AW(13),.RECOVERY(0)) u_cpu(
+// RECOVERY does not seem to have an effect on DD2 hanging up
+jtframe_sys6809 #(.RAM_AW(13),.RECOVERY(1)) u_cpu(
     .rstn       ( ~rst      ),
     .clk        ( clk       ),
-    .cen        ( cen12     ),    // This is normally the input clock to the CPU
+    .cen        ( cen12     ),   // This is normally the input clock to the CPU
     .cpu_cen    ( cpu_cen   ),   // 1/4th of cen -> 3MHz
     .VMA        (           ),
     // Interrupts

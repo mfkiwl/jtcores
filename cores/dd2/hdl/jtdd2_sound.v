@@ -208,7 +208,7 @@ jt6295 #(.INTERPOL(1)) u_adpcm(
 assign sample     = 0;
 assign sound      = 0;
 assign peak       = 0;
-assign rom_cs     = 0;
+initial rom_cs    = 0;
 assign rom_addr   = 0;
 assign adpcm_cs   = 0;
 assign adpcm_addr = 0;

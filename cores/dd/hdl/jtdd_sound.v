@@ -107,14 +107,14 @@ always @(*) begin
     endcase
 end
 
-always @(*) begin
-    cpu_din = 8'hff;
+always @(posedge clk) begin
     case(1'b1)
-        rom_cs:   cpu_din = rom_data;
-        ram_cs:   cpu_din = ram_dout;
-        latch_cs: cpu_din = snd_latch;
-        fm_cs:    cpu_din = fm_dout;
-        ad_cs:    cpu_din = {~6'h0, adpcm1_cs, adpcm0_cs};
+        rom_cs:   cpu_din <= rom_data;
+        ram_cs:   cpu_din <= ram_dout;
+        latch_cs: cpu_din <= snd_latch;
+        fm_cs:    cpu_din <= fm_dout;
+        ad_cs:    cpu_din <= {~6'h0, adpcm1_cs, adpcm0_cs};
+        default:  cpu_din <= 8'hff;
     endcase
 end
 

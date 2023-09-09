@@ -83,8 +83,8 @@ assign VBL = ~LVBL;
 assign HBL = ~LHBL;
 
 jtframe_vtimer #(
-    .VB_START   ( 9'hf9     ),
-    .VB_END     ( 9'h9      ),
+    .VB_START   ( 9'hf7     ),
+    .VB_END     ( 9'h7      ),
     .VCNT_END   ( 9'd271    ),
     .VS_START   ( 9'h106    ),
     .HS_START   ( 9'h1ae    ),

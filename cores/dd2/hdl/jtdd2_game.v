@@ -427,7 +427,8 @@ jtdd_video u_video(
     .green        (  green           ),
     .blue         (  blue            ),
     // Debug
-    .gfx_en       (  gfx_en          )
+    .gfx_en       (  gfx_en          ),
+    .debug_bus    ( debug_bus        )
 );
 `else
 assign red   = 4'd0;
