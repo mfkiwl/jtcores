@@ -83,7 +83,7 @@ wire               cpu_wrn;
 wire       [ 7:0]  cpu_dout;
 wire       [ 7:0]  char_dout, scr_dout, obj_dout, pal_dout;
 // video signals
-wire               VBL, HBL, IMS, H8;
+wire               VBL, IMS, H8;
 wire               flip;
 // ROM access
 wire       [15:0]  char_addr;
@@ -401,10 +401,9 @@ jtdd_video u_video(
     .scrvpos      ( scrvpos          ),
     // video signals
     .VBL          (  VBL             ),
-    .LVBL_dly     (  LVBL            ),
+    .LVBL         (  LVBL            ),
+    .LHBL         (  LHBL            ),
     .VS           (  VS              ),
-    .HBL          (  HBL             ),
-    .LHBL_dly     (  LHBL            ),
     .HS           (  HS              ),
     .IMS          (  IMS             ),
     .flip         (  flip            ),

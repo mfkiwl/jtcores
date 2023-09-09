@@ -27,7 +27,7 @@
 module jtdd_prom_we(
     input                clk,
     input                downloading,
-    input      [24:0]    ioctl_addr,
+    input      [25:0]    ioctl_addr,
     input      [ 7:0]    ioctl_dout,
     input                ioctl_wr,
     output reg [21:0]    prog_addr,
@@ -56,7 +56,7 @@ parameter OBJXY_ADDR  = 22'hE0000;
 parameter MCU_ADDR    = 22'h120000;
 parameter PROM_ADDR   = 22'h124000;
 // ROM length 124300
-localparam SCRWR = 5'd6;
+localparam SCRWR = 6'd6;
 localparam OBJWR = 5'd8;
 
 localparam [4:0] OBJHALF = OBJXY_ADDR[20:16]-OBJWZ_ADDR[20:16];
@@ -75,15 +75,15 @@ reg w_main, w_snd, w_char, w_scr, w_obj, w_mcu, w_prom, w_adpcm;
 `define INFO_PROM  w_prom <= 1'b1;
 `else
 // nothing for synthesis
-`define CLR_ALL  
-`define INFO_MAIN 
-`define INFO_SND  
-`define INFO_CHAR 
-`define INFO_ADPCM 
-`define INFO_SCR  
-`define INFO_OBJ  
-`define INFO_MCU  
-`define INFO_PROM 
+`define CLR_ALL
+`define INFO_MAIN
+`define INFO_SND
+`define INFO_CHAR
+`define INFO_ADPCM
+`define INFO_SCR
+`define INFO_OBJ
+`define INFO_MCU
+`define INFO_PROM
 `endif
 
 reg set_strobe, set_done;
@@ -129,15 +129,15 @@ always @(posedge clk) begin
             prog_mask <= {~ioctl_addr[3], ioctl_addr[3]};
             `INFO_CHAR
         end
-        else if(ioctl_addr[21:16] < OBJWZ_ADDR[21:16] ) begin // Scroll    
+        else if(ioctl_addr[21:16] < OBJWZ_ADDR[21:16] ) begin // Scroll
             prog_mask <= scr_top ? 2'b01 : 2'b10;
-            prog_addr <= { SCRWR+{1'b0,scr_top ? scr2_msb : scr_msb}, 
+            prog_addr <= { SCRWR+{2'b0,scr_top ? scr2_msb : scr_msb},
                 ioctl_addr[15:6], ioctl_addr[3:0], ioctl_addr[5:4] };
             `INFO_SCR
         end
         else if(ioctl_addr[21:16] < MCU_ADDR[21:16] ) begin // Objects
             prog_mask <= !obj_top ? 2'b10 : 2'b01;
-            prog_addr <= { OBJWR+( obj_top  ? obj2_msb : obj_msb), 
+            prog_addr <= { 1'b0, OBJWR+( obj_top  ? obj2_msb : obj_msb),
                 ioctl_addr[15:6], ioctl_addr[3:0], ioctl_addr[5:4] };
             `INFO_OBJ
         end

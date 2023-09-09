@@ -40,7 +40,9 @@ module jtdd_obj(
     output reg [18:0]  rom_addr,
     input      [15:0]  rom_data,
     input              rom_ok,
-    output reg [ 7:0]  obj_pxl
+    output reg [ 7:0]  obj_pxl,
+
+    input      [7:0]   debug_bus
 );
 
 // RAM area shared with CPU
@@ -146,7 +148,7 @@ always @(posedge clk, posedge rst) begin
                         maxline  <= maxline + 5'd1;
                     end else begin
                         state    <= 3'd0; // wait for next line
-                    end                
+                    end
                 end
             end
             default: state <= 3'd0;
@@ -208,7 +210,7 @@ always @(posedge clk, posedge rst) begin
             pxl_cnt <= 4'd0;
             posx    <= { scan_attr[1], scan_x };
             ok_dly  <= 1'b0;
-            rom_addr  <= { id_top, scan_id, scan_y[3:0]^{4{vflip}}, 
+            rom_addr  <= { id_top, scan_id, scan_y[3:0]^{4{vflip}},
                 2'b00^{2{hflip}} };
         end
         if( copying ) begin
@@ -221,20 +223,20 @@ always @(posedge clk, posedge rst) begin
                 end
                 shift <= hflip ? (shift<<4) : (shift>>4);
             end
-            case( pxl_cnt[1:0] ) 
+            case( pxl_cnt[1:0] )
                 2'b0: begin
-                    shift     <= { 
+                    shift     <= {
                         rom_data[15], rom_data[11], rom_data[7], rom_data[3],
                         rom_data[14], rom_data[10], rom_data[6], rom_data[2],
                         rom_data[13], rom_data[ 9], rom_data[5], rom_data[1],
                         rom_data[12], rom_data[ 8], rom_data[4], rom_data[0] };
                 end
                 2'b1: begin
-                    rom_addr  <= { id_top, scan_id, scan_y[3:0], 
+                    rom_addr  <= { id_top, scan_id, scan_y[3:0],
                         cnt_msb_next^{2{hflip}} };
                 end
                 default:;
-            endcase            
+            endcase
         end
     end
 end
@@ -245,8 +247,6 @@ reg  [9:0] ln_addr;
 wire [7:0] ln_dout;
 reg        ln_we;
 reg        copying_dly;
-
-localparam [7:0] obj_dly = 8'd6;
 
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
@@ -259,7 +259,7 @@ always @(posedge clk, posedge rst) begin
     else begin
         copying_dly <= copying & ok_dly & rom_ok;
         if( HBL ) begin // clear memory during the blank
-            rd_addr <= 8'd0-obj_dly;
+            rd_addr <= 8'hff;
             ln_data <= 8'h0;
             ln_addr[8:0] <= ln_addr[8:0] + 9'd1;
             ln_we   <= 1'b1;

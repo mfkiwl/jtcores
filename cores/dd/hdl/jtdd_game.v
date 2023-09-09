@@ -42,7 +42,7 @@ module jtdd_game(
     input           data_rdy,
     input           sdram_ack,
     // ROM LOAD
-    input   [24:0]  ioctl_addr,
+    input   [25:0]  ioctl_addr,
     input   [ 7:0]  ioctl_dout,
     input           ioctl_wr,
     output  [21:0]  prog_addr,
@@ -83,7 +83,7 @@ wire       [ 7:0]  cpu_dout;
 wire               cen_E, cen_Q;
 wire       [ 7:0]  char_dout, scr_dout, obj_dout, pal_dout;
 // video signals
-wire               VBL, HBL, IMS, H8;
+wire               VBL, IMS, H8;
 wire               flip;
 // ROM access
 wire       [15:0]  char_addr;
@@ -121,7 +121,7 @@ wire cpu_cen;
 wire pxl_cenb;
 wire turbo;
 
-assign turbo              = status[13];
+assign turbo              = `ifdef ALWAYS_TURBO 1 `else status[13] `endif ;
 assign dwnld_busy         = downloading;
 assign prog_rd            = 0;
 
@@ -347,10 +347,9 @@ jtdd_video u_video(
     .scrvpos      ( scrvpos          ),
     // video signals
     .VBL          (  VBL             ),
-    .LVBL_dly     (  LVBL            ),
+    .LVBL         (  LVBL            ),
     .VS           (  VS              ),
-    .HBL          (  HBL             ),
-    .LHBL_dly     (  LHBL            ),
+    .LHBL         (  LHBL            ),
     .HS           (  HS              ),
     .IMS          (  IMS             ),
     .flip         (  flip            ),
@@ -374,7 +373,8 @@ jtdd_video u_video(
     .green        (  green           ),
     .blue         (  blue            ),
     // Debug
-    .gfx_en       (  gfx_en          )
+    .gfx_en       (  gfx_en          ),
+    .debug_bus    (  debug_bus       )
 );
 
 // Same as locations inside JTCORES.rom file
@@ -427,8 +427,8 @@ jtframe_rom #(
     .rst         ( rst           ),
     .clk         ( clk           ),
 
-    .slot0_cs    ( ~VBL          ),
-    .slot1_cs    ( ~VBL          ),
+    .slot0_cs    ( LVBL          ),
+    .slot1_cs    ( LVBL          ),
     .slot2_cs    ( adpcm0_cs     ), // ADPCM 0
     .slot3_cs    ( adpcm1_cs     ), // ADPCM 1
     .slot4_cs    ( 1'b0          ), // unused

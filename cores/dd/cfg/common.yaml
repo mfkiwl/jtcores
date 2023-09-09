@@ -8,7 +8,6 @@ game:
       - jtdd_char.v
       - jtdd_obj.v
       - jtdd_scroll.v
-      - jtdd_timing.v
 jtframe:
   - get:
       - jtframe_ff.v
@@ -29,6 +28,9 @@ jtframe:
   - from: sound
     get:
       - jtframe_mixer.v
+  - from: video
+    get:
+      - jtframe_vtimer.v
 modules:
   jt:
     - name: jt51
