@@ -94,9 +94,19 @@ wire irq_clr     = w3805;
 `endif
 wire sndlatch_cs = w3806;
 wire irq_ack;
+reg  rst_vb;
 
 assign mcu_nmi_set = w3807;
 assign flip = 0; // not implemented
+
+// Do not release the reset while in blanking or it will trigger
+// a potentially catastrophic NMI
+always @(posedge clk) begin
+    if( rst )
+        rst_vb <= 1;
+    else if( !VBL )
+        rst_vb <= 0;
+end
 
 always @(*) begin
     scr_cs      = 1'b0;
@@ -241,16 +251,13 @@ always @(*) begin
 end
 
 // Interrupts
-(*keep*) wire nIRQ, nFIRQ, nNMI;
-(*keep*) reg VBL_pause;
+wire nIRQ, nFIRQ, nNMI, VBL_pause;
 
-always @(posedge clk) if(cpu_cen) begin
-    VBL_pause <= VBL & dip_pause;
-end
+assign VBL_pause = VBL & dip_pause;
 
 jtframe_ff #(.W(3)) u_irq(
     .clk     (   clk                            ),
-    .rst     (   rst                            ),
+    .rst     (   rst_vb                         ),
     .cen     (   1'b1                           ),
     .sigedge ( {VBL_pause, IMS, mcu_irqmain   } ),
     .din     ( ~3'd0                            ),

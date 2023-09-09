@@ -143,6 +143,18 @@ func parse_file(core, filename string, cfg *MemConfig, args Args) bool {
 			cfg.SDRAM.Banks[k].MemType = "rom"
 		}
 	}
+	// check that gfx_sort expressions are supported
+	for _, bank := range cfg.SDRAM.Banks {
+		for _, each := range bank.Buses {
+			switch each.Gfx {
+				case "", "hhvvv", "hhvvvv", "hhvvvx", "hhvvvvx": break
+				default: {
+					fmt.Printf("Unsupported gfx_sort %d\n", each.Gfx)
+					return false
+				}
+			}
+		}
+	}
 	return true
 }
 
@@ -468,6 +480,66 @@ func make_dump2bin( args Args, cfg *MemConfig ) {
 	}
 }
 
+func fill_gfx_sort( macros map[string]string, cfg *MemConfig ) {
+	// this will not merge correctly hhvvv and hhvvvx used together, that's
+	// not supported in jtframe_dwnld at the moment
+	appendif := func( ss *[]string, mac string ) {
+		if jtdef.Defined(macros,mac) { *ss = append(*ss, "`"+mac) }
+	}
+	make_gfx := func( match string ) (string, int) {
+		ranges :=  make([]string,0)
+		b0 := 0
+		for k, bank := range cfg.SDRAM.Banks {
+			offsets := make([]string,0)
+			appendif(&offsets, "JTFRAME_HEADER" )
+			appendif(&offsets,fmt.Sprintf("JTFRAME_BA%d_START",k))
+			for j, each := range bank.Buses {
+				if each.Offset != "" { offsets = append(offsets, fmt.Sprintf("(%s<<1)",each.Offset) )}
+				if each.Gfx!=match && each.Gfx!=(match+"x") { continue }
+				if strings.HasSuffix(each.Gfx,"x") { b0 = 1 }
+				new_range := ""
+				if len(offsets)>0 {
+					addr0 := fmt.Sprintf("(%s)",strings.Join(offsets,"+"))
+					new_range = fmt.Sprintf("ioctl_addr>=(%s)", addr0 )
+				}
+				addr1 := ""
+				offsets2 := make([]string,0)
+				if j+1<len(bank.Buses) { // is there another entry in the same bank?
+					if bank.Buses[j+1].Offset == ""	{
+						fmt.Printf("Error: missing offset of bus entry %s (bank %d)\n", bank.Buses[j+1].Name, k)
+						fmt.Println("You need to define it as the previous entry has gfx_sort definition")
+						os.Exit(1)
+					}
+					offsets2 = append(offsets,fmt.Sprintf("(%s<<1)",bank.Buses[j+1].Offset))
+				} else {
+					if jtdef.Defined(macros,fmt.Sprintf("JTFRAME_BA%d_START",k+1)) { // is there another bank
+						appendif( &offsets2, "JTFRAME_HEADER" )
+						offsets2 = append(offsets2,fmt.Sprintf("`JTFRAME_BA%d_START",k+1))
+					} else if jtdef.Defined(macros,"JTFRAME_PROM_START") {
+						appendif( &offsets2, "JTFRAME_HEADER" )
+						offsets2 = append(offsets2,"JTFRAME_PROM_START")
+					}
+				}
+				if len(offsets2)>0 {
+					addr1 = strings.Join(offsets2,"+")
+					new_range = fmt.Sprintf("%s && ioctl_addr<(%s)", new_range, addr1 )
+				}
+				new_range = fmt.Sprintf("(%s) /* %s */", new_range, each.Name )
+				ranges = append(ranges, new_range)
+			}
+		}
+		if len(ranges)>0 {
+			aux := strings.Join(ranges,"||\n    ")
+			aux += ";"
+			return aux,b0
+		} else {
+			return "0;",0
+		}
+	}
+	cfg.Gfx8, cfg.Gfx8b0  = make_gfx("hhvvv")
+	cfg.Gfx16,cfg.Gfx16b0 = make_gfx("hhvvvv")
+}
+
 func Run(args Args) {
 	var cfg MemConfig
 	if !parse_file(args.Core, "mem", &cfg, args) {
@@ -479,6 +551,7 @@ func Run(args Args) {
 	check_banks( macros, &cfg )
 	fill_implicit_ports( macros, &cfg )
 	make_ioctl( &cfg, args.Verbose )
+	fill_gfx_sort( macros, &cfg )
 	// Fill the clock configuration
 	make_clocks( macros, &cfg )
 	// Execute the template

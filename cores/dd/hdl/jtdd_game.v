@@ -17,67 +17,11 @@
     Date: 2-12-2019 */
 
 module jtdd_game(
-    input           rst,
-    input           clk,
-    input           rst24,
-    input           clk24,
-    output          pxl2_cen,
-    output          pxl_cen,
-    output          LVBL,
-    output          LHBL,
-    output          HS,
-    output          VS,
-    // cabinet I/O
-    input   [ 1:0]  start_button,
-    input   [ 1:0]  coin_input,
-    input   [ 6:0]  joystick1,
-    input   [ 6:0]  joystick2,
-    // SDRAM interface
-    input           downloading,
-    output          dwnld_busy,
-    output          sdram_req,
-    output  [21:0]  sdram_addr,
-    input   [15:0]  data_read,
-    input           data_dst,
-    input           data_rdy,
-    input           sdram_ack,
-    // ROM LOAD
-    input   [25:0]  ioctl_addr,
-    input   [ 7:0]  ioctl_dout,
-    input           ioctl_wr,
-    output  [21:0]  prog_addr,
-    output  [ 7:0]  prog_data,
-    output  [ 1:0]  prog_mask,
-    output          prog_we,
-    output          prog_rd,
-    // DIP switches
-    input   [31:0]  status,
-    input   [31:0]  dipsw,
-    input           service,
-    input           tilt,
-    input           dip_pause,
-    inout           dip_flip,
-    input           dip_test,
-    input   [ 1:0]  dip_fxlevel, // Not a DIP on the original PCB
-    // Sound output (monoaural game)
-    output  signed [15:0] snd,
-    output          sample,
-    output          game_led,
-    input           enable_psg,
-    input           enable_fm,
-    // video
-    output  [ 3:0]  red,
-    output  [ 3:0]  green,
-    output  [ 3:0]  blue,
-    // Debug
-    input   [ 7:0]  debug_bus,
-    output  [ 7:0]  debug_view,
-    input   [ 3:0]  gfx_en
+    `include "jtframe_game_ports.inc" // see $JTFRAME/hdl/inc/jtframe_game_ports.inc
 );
 
 wire       [12:0]  cpu_AB;
 wire               pal_cs;
-wire               char_cs, scr_cs, obj_cs;
 wire               cpu_wrn;
 wire       [ 7:0]  cpu_dout;
 wire               cen_E, cen_Q;
@@ -85,22 +29,6 @@ wire       [ 7:0]  char_dout, scr_dout, obj_dout, pal_dout;
 // video signals
 wire               VBL, IMS, H8;
 wire               flip;
-// ROM access
-wire       [15:0]  char_addr;
-wire       [14:0]  snd_addr;
-wire       [15:0]  adpcm0_addr, adpcm1_addr;
-wire       [ 7:0]  char_data, adpcm0_data, adpcm1_data;
-wire       [16:0]  scr_addr;
-wire       [18:0]  obj_addr;
-wire       [15:0]  scr_data, obj_data;
-wire               char_ok, scr_ok, obj_ok, main_ok, snd_ok;
-wire               adpcm0_ok, adpcm1_ok;
-wire       [17:0]  main_addr;
-wire               main_cs, snd_cs, adpcm0_cs, adpcm1_cs;
-wire       [ 7:0]  main_data, snd_data;
-wire       [13:0]  mcu_addr;
-wire       [ 7:0]  mcu_data;
-wire               mcu_cs, mcu_ok;
 // Sound
 wire               mcu_rstb, snd_irq;
 wire       [ 7:0]  snd_latch;
@@ -114,77 +42,22 @@ wire               prom_prio_we;
 
 wire       [ 8:0]  scrhpos, scrvpos;
 
-wire cen12, cen6, cen3, cen1p5;
 wire cpu_cen;
 
 // Pixel signals all from 48MHz clock
-wire pxl_cenb;
 wire turbo;
 
 assign turbo              = `ifdef ALWAYS_TURBO 1 `else status[13] `endif ;
-assign dwnld_busy         = downloading;
-assign prog_rd            = 0;
-
 assign {dipsw_b, dipsw_a} = dipsw[15:0];
 assign dip_flip           = flip;
 assign debug_view         = 0;
-
-jtframe_cen48 u_cen(
-    .clk     (  clk      ),    // 48 MHz
-    .cen12   (  pxl2_cen ),
-    .cen16   (           ),
-    .cen16b  (           ),
-    .cen8    (           ),
-    .cen6    (  pxl_cen  ),
-    .cen4    (           ),
-    .cen4_12 (           ),
-    .cen3    (           ),
-    .cen3b   (           ),
-    .cen3q   (           ),
-    .cen3qb  (           ),
-    .cen1p5  (           ),
-    .cen12b  (           ),
-    .cen6b   (  pxl_cenb ),
-    .cen1p5b (           )
-);
-
-wire alt12, alt6;
-
-// CPU and sub CPU from slower clock in order to
-// prevent timing error in 6809 CC bit Z
-jtframe_cen24 u_cen24(
-    .clk     (  clk24    ),    // 48 MHz
-    .cen12   (  cen12    ),
-    .cen8    (           ),
-    .cen6    (  cen6     ),
-    .cen4    (           ),
-    .cen3    (  cen3     ),
-    .cen3b   (           ),
-    .cen3q   (           ),
-    .cen3qb  (           ),
-    .cen1p5  (  cen1p5   ),
-    .cen12b  (           ),
-    .cen6b   (           ),
-    .cen1p5b (           )
-);
-
-jtdd_prom_we u_prom(
-    .clk          ( clk             ),
-    .downloading  ( downloading     ),
-    .ioctl_addr   ( ioctl_addr      ),
-    .ioctl_dout   ( ioctl_dout      ),
-    .ioctl_wr     ( ioctl_wr        ),
-    .prog_addr    ( prog_addr       ),
-    .prog_data    ( prog_data       ),
-    .prog_mask    ( prog_mask       ),
-    .prog_we      ( prog_we         ),
-    .prom_we      ( prom_prio_we    ),
-    .sdram_ack    ( sdram_ack       )
-);
+assign prom_prio_we       = prom_we & ~prog_addr[8];
 
 `ifndef NOMAIN
 wire main_cen = turbo ? 1'd1 : cen12;
 
+// CPU and sub CPU from slower clock in order to
+// prevent timing error in 6809 CC bit Z
 jtdd_main u_main(
     .clk            ( clk24         ),
     .rst            ( rst24         ),
@@ -329,7 +202,6 @@ jtdd_video u_video(
     .clk          (  clk             ),
     .rst          (  rst             ),
     .pxl_cen      (  pxl_cen         ),
-    .pxl_cenb     (  pxl_cenb        ),
     .cen_Q        (  cpu_cen         ),
     .cpu_AB       (  cpu_AB          ),
     .pal_cs       (  pal_cs          ),
@@ -376,7 +248,7 @@ jtdd_video u_video(
     .gfx_en       (  gfx_en          ),
     .debug_bus    (  debug_bus       )
 );
-
+/*
 // Same as locations inside JTCORES.rom file
 localparam BANK_ADDR   = 22'h0_0000;
 localparam MAIN_ADDR   = 22'h2_0000;
@@ -477,5 +349,5 @@ jtframe_rom #(
     .slot4_dout  (               ),
     .slot4_ok    (               )
 );
-
+*/
 endmodule
