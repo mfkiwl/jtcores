@@ -83,7 +83,7 @@ always @(*) begin
     header    = HEADER!=0 && ioctl_addr < HEADER && downloading;
     part_addr = ioctl_addr-HEADER;
     if( gfx8_en  ) part_addr[GFX8B0 +:5] = { part_addr[GFX8B0 +:3], part_addr[GFX8B0+3 +:2] }; // HHVVV  -> VVVHH
-    if( gfx16_en ) part_addr[GFX16B0+:6] = { part_addr[GFX16B0+:4], part_addr[GFX16B0+3+:2] }; // HHVVVV -> VVVVHH
+    if( gfx16_en ) part_addr[GFX16B0+:6] = { part_addr[GFX16B0+:4], part_addr[GFX16B0+4+:2] }; // HHVVVV -> VVVVHH
 end
 
 `ifdef SIMULATION `ifdef JTFRAME_PROM_START `ifndef LOADROM
