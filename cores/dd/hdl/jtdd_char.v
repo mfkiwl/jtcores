@@ -25,7 +25,7 @@ module jtdd_char(
     input              rst,
     (*direct_enable*)  input pxl_cen,
     input      [10:0]  cpu_AB,
-    input              char_cs,
+    input              cram_cs,
     input              cpu_wrn,
     input      [ 7:0]  cpu_dout,
     input              cen_Q,
@@ -49,8 +49,8 @@ assign hi_data = hi_dout;
 assign lo_data = lo_dout;
 
 always @(*) begin
-    lo_we     = cen_Q && char_cs && !cpu_wrn &&  cpu_AB[0];
-    hi_we     = cen_Q && char_cs && !cpu_wrn && !cpu_AB[0];
+    lo_we     = cen_Q && cram_cs && !cpu_wrn &&  cpu_AB[0];
+    hi_we     = cen_Q && cram_cs && !cpu_wrn && !cpu_AB[0];
     scan      = { VPOS[7:3], HPOS[7:3] };
     // ram_addr  = HPOS[0] ? cpu_AB[12:1] : scan;
     char_dout = !cpu_AB[0] ? cpu_hi : cpu_lo;
@@ -64,18 +64,18 @@ wire [3:0] mux = flip ? shift[7:4] : shift[3:0];
 reg char_error;
 `define ROM_ERROR char_error<=~rom_ok;
 `else
-`define ROM_ERROR 
+`define ROM_ERROR
 `endif
 
 always @(posedge clk) if(pxl_cen) begin
     char_pxl  <= { pal0, mux };
-    case( HPOS[0] ) 
+    case( HPOS[0] )
         1'b0: begin// 01
             // Double Dragon 1 only uses hi_data[1:0], but filling up for compatibility with DD2
             rom_addr <= { hi_data[2:0], lo_data, VPOS[2:0], HPOS[2:1] };
             pal       <= hi_data[7:5];
             pal0      <= pal;
-            shift     <= { 
+            shift     <= {
                 rom_data[7], rom_data[5], rom_data[3], rom_data[1],
                 rom_data[6], rom_data[4], rom_data[2], rom_data[0] };
             `ROM_ERROR

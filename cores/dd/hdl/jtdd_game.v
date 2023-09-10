@@ -21,7 +21,7 @@ module jtdd_game(
 );
 
 wire       [12:0]  cpu_AB;
-wire               pal_cs;
+wire               cram_cs, vram_cs, oram_cs, pal_cs;
 wire               cpu_wrn;
 wire       [ 7:0]  cpu_dout;
 wire               cen_E, cen_Q;
@@ -32,26 +32,19 @@ wire               flip;
 // Sound
 wire               mcu_rstb, snd_irq;
 wire       [ 7:0]  snd_latch;
-// DIP
-wire       [ 7:0]  dipsw_a, dipsw_b;
 // MCU
 wire               mcu_irqmain, mcu_halt, com_cs, mcu_nmi_set, mcu_ban;
 wire       [ 7:0]  mcu_ram;
-// PROM programming
-wire               prom_prio_we;
 
 wire       [ 8:0]  scrhpos, scrvpos;
+wire               cpu_cen, turbo;
 
-wire cpu_cen;
-
-// Pixel signals all from 48MHz clock
-wire turbo;
-
-assign turbo              = `ifdef ALWAYS_TURBO 1 `else status[13] `endif ;
-assign {dipsw_b, dipsw_a} = dipsw[15:0];
-assign dip_flip           = flip;
-assign debug_view         = 0;
-assign prom_prio_we       = prom_we & ~prog_addr[8];
+assign turbo        = `ifdef ALWAYS_TURBO 1 `else status[13] `endif ;
+assign dip_flip     = flip;
+assign debug_view   = 0;
+assign char_cs      = LVBL;
+assign obj_cs       = LVBL;
+assign scr_cs       = LVBL;
 
 `ifndef NOMAIN
 wire main_cen = turbo ? 1'd1 : cen12;
@@ -83,13 +76,13 @@ jtdd_main u_main(
     // Characters
     .char_dout      ( char_dout     ),
     .cpu_dout       ( cpu_dout      ),
-    .char_cs        ( char_cs       ),
+    .cram_cs        ( cram_cs       ),
     // Objects
     .obj_dout       ( obj_dout      ),
-    .obj_cs         ( obj_cs        ),
+    .oram_cs        ( oram_cs       ),
     // scroll
     .scr_dout       ( scr_dout      ),
-    .scr_cs         ( scr_cs        ),
+    .vram_cs        ( vram_cs       ),
     .scrhpos        ( scrhpos       ),
     .scrvpos        ( scrvpos       ),
     // cabinet I/O
@@ -108,15 +101,15 @@ jtdd_main u_main(
     // DIP switches
     .dip_pause      ( dip_pause     ),
     .service        ( service       ),
-    .dipsw_a        ( dipsw_a       ),
-    .dipsw_b        ( dipsw_b       )
+    .dipsw_a        ( dipsw[ 7:0]   ),
+    .dipsw_b        ( dipsw[15:8]   )
 );
 `else
 assign main_cs   = 1'b0;
 assign main_addr = 18'd0;
-assign char_cs   = 1'b0;
-assign scr_cs    = 1'b0;
-assign obj_cs    = 1'b0;
+assign cram_cs   = 1'b0;
+assign vram_cs    = 1'b0;
+assign oram_cs   = 1'b0;
 assign pal_cs    = 1'b0;
 assign mcu_cs    = 1'b0;
 assign flip      = 1'b0;
@@ -205,9 +198,9 @@ jtdd_video u_video(
     .cen_Q        (  cpu_cen         ),
     .cpu_AB       (  cpu_AB          ),
     .pal_cs       (  pal_cs          ),
-    .char_cs      (  char_cs         ),
-    .scr_cs       (  scr_cs          ),
-    .obj_cs       (  obj_cs          ),
+    .cram_cs      (  cram_cs         ),
+    .vram_cs      (  vram_cs         ),
+    .oram_cs      (  oram_cs         ),
     .cpu_wrn      (  cpu_wrn         ),
     .cpu_dout     (  cpu_dout        ),
     .char_dout    (  char_dout       ),
@@ -238,7 +231,7 @@ jtdd_video u_video(
     .obj_ok       (  obj_ok          ),
     // PROM programming
     .prog_addr    (  prog_addr[7:0]  ),
-    .prom_prio_we (  prom_prio_we    ),
+    .prom_prio_we (  prom_we         ),
     .prom_din     (  prog_data[3:0]  ),
     // Pixel output
     .red          (  red             ),

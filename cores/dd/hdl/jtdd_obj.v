@@ -27,7 +27,7 @@ module jtdd_obj(
     (*direct_enable*)  input pxl_cen,
     input              cen_Q,
     input      [ 8:0]  cpu_AB,
-    input              obj_cs,
+    input              oram_cs,
     input              cpu_wrn,
     input      [ 7:0]  cpu_dout,
     output     [ 7:0]  obj_dout,
@@ -157,8 +157,8 @@ always @(posedge clk, posedge rst) begin
 end
 
 always @(*) begin
-    ram_we    = obj_cs && !cpu_wrn;
-    ram_addr  = obj_cs ? cpu_AB : ( scan + {5'd0,offset} );
+    ram_we   = oram_cs && !cpu_wrn;
+    ram_addr = oram_cs ? cpu_AB : ( scan + {5'd0,offset} );
 end
 
 jtframe_ram #(.AW(9),.SIMFILE("obj.bin")) u_ram(

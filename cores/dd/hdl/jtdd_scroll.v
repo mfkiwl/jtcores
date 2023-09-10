@@ -25,7 +25,7 @@ module jtdd_scroll(
     input              rst,
     (*direct_enable*)  input pxl_cen,
     input      [10:0]  cpu_AB,
-    input              scr_cs,
+    input              vram_cs,
     input              cpu_wrn,
     input      [ 7:0]  cpu_dout,
     input              cen_Q,
@@ -53,8 +53,8 @@ always @(posedge clk) begin // may consider latching this if glitches appear
 end
 
 always @(*) begin
-    lo_we     = cen_Q && scr_cs && !cpu_wrn &&  cpu_AB[0];
-    hi_we     = cen_Q && scr_cs && !cpu_wrn && !cpu_AB[0];
+    lo_we     = cen_Q && vram_cs && !cpu_wrn &&  cpu_AB[0];
+    hi_we     = cen_Q && vram_cs && !cpu_wrn && !cpu_AB[0];
     scan      = { vscr[8], hscr[8], vscr[7:4], hscr[7:4] };
     scr_dout  = !cpu_AB[0] ? cpu_hi : cpu_lo;
 end
