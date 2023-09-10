@@ -496,8 +496,13 @@ func fill_gfx_sort( macros map[string]string, cfg *MemConfig ) {
 			for j, each := range bank.Buses {
 				if each.Offset != "" { offsets = append(offsets, fmt.Sprintf("(%s<<1)",each.Offset) )}
 				if each.Gfx!=match && each.Gfx!=(match+"x") && each.Gfx!=(match+"xx") { continue }
-				if strings.HasSuffix(each.Gfx,"x")  { b0 = 1 }
-				if strings.HasSuffix(each.Gfx,"xx") { b0 = 2 }
+				// bit 0 should be the one containing the first H bit
+				// when <interleave> is used in the MRA, that bit will be 1 for 16-bit interleaves
+				// and 2 for 32-bit interleaves
+				// additionally the user can add one or two x to the gfx code to increase bit count further
+				b0 = each.Data_width>>4
+				if strings.HasSuffix(each.Gfx,"x")  { b0++ }
+				if strings.HasSuffix(each.Gfx,"xx") { b0++ }
 				new_range := ""
 				if len(offsets)>0 {
 					addr0 := fmt.Sprintf("(%s)",strings.Join(offsets,"+"))

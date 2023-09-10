@@ -47,14 +47,14 @@ sdram:
           addr_width: 18
           data_width: 16
           offset: SCR_OFFSET
-          gfx_sort: hhvvvvx
+          gfx_sort: hhvvvv
     -
       buses:
         -
           name: obj
           addr_width: 20
           data_width: 16
-          gfx_sort: hhvvvvx
+          gfx_sort: hhvvvv
         -
           name: mcu
           addr_width: 14
