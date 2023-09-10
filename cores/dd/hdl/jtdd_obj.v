@@ -53,7 +53,8 @@ wire        scan_done = next_scan == 9'd510;
 reg  HBL_l, wait_mem;
 wire negedge_HBL = !HBL && HBL_l;
 
-reg  [ 7:0] scan_y, scan_attr, scan_attr2, scan_id, scan_x;
+reg  [ 7:0] scan_y, scan_attr, scan_attr2, scan_id;
+reg  [ 8:0] scan_x;
 wire [ 8:0] sumy = {1'b0, VPOS } + { 1'b0, scan_y };
 wire inzone = &{ sumy[7:5], ~(oram_data[0]^sumy[8]), sumy[4]|oram_data[4] };
 
@@ -97,6 +98,7 @@ always @(posedge clk, posedge rst) begin
                 wait_mem  <= 1'b0;
                 if( !wait_mem ) begin
                     scan_attr <= oram_data; // +1
+                    scan_x[8] <= oram_data[1];
                     if( !inzone || !oram_data[7] /*enable bit*/ ) begin
                         if( !scan_done ) begin
                             state    <= 3'd1;
@@ -126,7 +128,7 @@ always @(posedge clk, posedge rst) begin
                 state   <= 3'd5;
             end
             3'd5: begin
-                scan_x  <= ~oram_data; // +4
+                scan_x[7:0] <= ~oram_data; // +4
                 `ifdef DD2
                 if( scan_attr[5:4]!=2'b00 )
                     scan_id[1:0] <= scan_id[1:0] + {1'b0, scan_y[4] };
@@ -191,7 +193,7 @@ jtframe_objdraw #(
     .draw       ( draw      ),
     .busy       ( dr_busy   ),
     .code       ( { id_top, scan_id } ),
-    .xpos       ( { scan_attr[1], scan_x } ),
+    .xpos       (scan_x-9'h8),
     .ysub       ( scan_y[3:0] ),
     // optional zoom, keep at zero for no zoom
     .hzoom      ( 6'd0      ),
