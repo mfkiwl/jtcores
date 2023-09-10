@@ -462,6 +462,7 @@ func make_ioctl( cfg *MemConfig, verbose bool ) {
 }
 
 func make_dump2bin( args Args, cfg *MemConfig ) {
+	if len( cfg.Ioctl.Buses )==0 { return }
 	tpath := filepath.Join(os.Getenv("JTFRAME"), "src", "jtframe", "mem", "dump2bin.sh")
 	t := template.Must(template.New("dump2bin.sh").Funcs(funcMap).ParseFiles(tpath))
 	var buffer bytes.Buffer

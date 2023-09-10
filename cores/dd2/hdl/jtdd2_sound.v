@@ -202,6 +202,7 @@ jt6295 #(.INTERPOL(1)) u_adpcm(
     .rom_data   ( adpcm_data),
     .rom_ok     ( adpcm_ok  ),
     // Sound output
+    .sample     (           ),
     .sound      ( adpcm_snd )
 );
 `else // NOSOUND

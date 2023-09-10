@@ -1,0 +1,60 @@
+params:
+  - { name: PCM0_OFFSET, value: "(`ADPCM0_START-`JTFRAME_BA1_START)>>1" }
+  - { name: SCR_OFFSET,  value: "(`SCR_START-`JTFRAME_BA2_START) >>1" }
+  - { name: MCU_OFFSET,  value: "(`MCU_START-`JTFRAME_BA3_START)>>1" }
+clocks:
+  clk24:
+    - freq: 12000000
+      outputs:
+        - cen12
+        - cen6
+        - cen3
+        - cen1p5
+    - freq: 8000000
+      outputs:
+        - cen8
+        - cen4
+sdram:
+  banks:
+    -
+      buses:
+        -
+          name: main
+          addr_width: 18
+          data_width: 8
+    -
+      buses:
+        -
+          name: snd
+          addr_width: 15
+          data_width: 8
+        -
+          name: adpcm
+          addr_width: 18
+          data_width: 8
+          offset: PCM0_OFFSET
+    -
+      buses:
+        -
+          name: char
+          addr_width: 16 # DD1 only uses 15, DD2 uses 16
+          data_width: 8
+          gfx_sort: hhvvv
+        -
+          name: scr
+          addr_width: 18
+          data_width: 16
+          offset: SCR_OFFSET
+          gfx_sort: hhvvvv
+    -
+      buses:
+        -
+          name: obj
+          addr_width: 20
+          data_width: 16
+          gfx_sort: hhvvvv
+        -
+          name: mcu
+          addr_width: 16
+          data_width: 8
+          offset: MCU_OFFSET
