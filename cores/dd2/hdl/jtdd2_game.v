@@ -24,7 +24,7 @@ wire       [12:0]  cpu_AB;
 wire               cram_cs, vram_cs, oram_cs, pal_cs;
 wire               cpu_wrn;
 wire       [ 7:0]  cpu_dout;
-wire       [ 7:0]  char_dout, scr_dout, obj_dout, pal_dout;
+wire       [ 7:0]  char_dout, scr_dout, pal_dout;
 // video signals
 wire               VBL, IMS, H8, flip;
 // Sound
@@ -47,6 +47,8 @@ assign debug_view = 0;
 assign char_cs    = LVBL;
 assign obj_cs     = LVBL;
 assign scr_cs     = LVBL;
+assign main_dout  = cpu_dout;
+assign oram_we    = oram_cs & ~cpu_wrn;
 
 `ifndef NOMAIN
 wire main_cen = turbo ? 1'd1 : cen12;
@@ -214,12 +216,10 @@ jtdd_video u_video(
     .pal_cs       (  pal_cs          ),
     .cram_cs      (  cram_cs         ),
     .vram_cs      (  vram_cs         ),
-    .oram_cs      (  oram_cs         ),
     .cpu_wrn      (  cpu_wrn         ),
     .cpu_dout     (  cpu_dout        ),
     .char_dout    (  char_dout       ),
     .scr_dout     (  scr_dout        ),
-    .obj_dout     (  obj_dout        ),
     .pal_dout     (  pal_dout        ),
     // Scroll position
     .scrhpos      ( scrhpos          ),
@@ -233,6 +233,9 @@ jtdd_video u_video(
     .IMS          (  IMS             ),
     .flip         (  flip            ),
     .H8           (  H8              ),
+    // Video RAM
+    .oram_addr    ( oram_addr        ),
+    .oram_data    ( oram_dout        ),
     // ROM access
     .char_addr    (  char_addr       ),
     .char_data    (  char_data       ),

@@ -24,18 +24,15 @@
 module jtdd_obj(
     input              clk,
     input              rst,
-    (*direct_enable*)  input pxl_cen,
-    input              cen_Q,
-    input      [ 8:0]  cpu_AB,
-    input              oram_cs,
-    input              cpu_wrn,
-    input      [ 7:0]  cpu_dout,
-    output     [ 7:0]  obj_dout,
+    input              pxl_cen,
     // screen
     input      [ 7:0]  HPOS,
     input      [ 7:0]  VPOS,
     input              flip,
     input              HBL,
+    // RAM
+    output     [ 8:0]  oram_addr,
+    input      [ 7:0]  oram_data,
     // ROM access
     output reg [18:0]  rom_addr,
     input      [15:0]  rom_data,
@@ -57,13 +54,15 @@ wire negedge_HBL = !HBL && last_HBL;
 
 reg  [ 7:0] scan_y, scan_attr, scan_attr2, scan_id, scan_x;
 wire [ 8:0] sumy = {1'b0, VPOS } + { 1'b0, scan_y };
-wire inzone = &{ sumy[7:5], ~(obj_dout[0]^sumy[8]), sumy[4]|obj_dout[4] };
+wire inzone = &{ sumy[7:5], ~(oram_data[0]^sumy[8]), sumy[4]|oram_data[4] };
 
 reg  copy_done;
 reg  line, copy;
 reg  ram_we;
 
 reg [2:0] state;
+
+assign oram_addr = scan + {5'd0,offset};
 
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
@@ -87,7 +86,7 @@ always @(posedge clk, posedge rst) begin
             3'd1: begin // get object's y
                 wait_mem <= 1'b0;
                 if( !wait_mem ) begin
-                    scan_y    <= obj_dout; // +0
+                    scan_y    <= oram_data; // +0
                     offset   <= 3'd1;
                     wait_mem <= 1'b1;
                     state    <= state+3'd1;
@@ -96,8 +95,8 @@ always @(posedge clk, posedge rst) begin
             3'd2: begin // advance until a visible object is found
                 wait_mem  <= 1'b0;
                 if( !wait_mem ) begin
-                    scan_attr <= obj_dout; // +1
-                    if( !inzone || !obj_dout[7] /*enable bit*/ ) begin
+                    scan_attr <= oram_data; // +1
+                    if( !inzone || !oram_data[7] /*enable bit*/ ) begin
                         if( !scan_done ) begin
                             state    <= 3'd1;
                             offset   <= 3'd0; // try next object
@@ -118,15 +117,15 @@ always @(posedge clk, posedge rst) begin
             end
             3'd3: begin
                 offset     <= 3'd4;
-                scan_attr2 <= obj_dout; // +2
+                scan_attr2 <= oram_data; // +2
                 state      <= 3'd4;
             end
             3'd4: begin
-                scan_id <= obj_dout; // +3
+                scan_id <= oram_data; // +3
                 state   <= 3'd5;
             end
             3'd5: begin
-                scan_x  <= obj_dout; // +4
+                scan_x  <= oram_data; // +4
                 `ifdef DD2
                 if( scan_attr[5:4]!=2'b00 )
                     scan_id[1:0] <= scan_id[1:0] + {1'b0, scan_y[4] };
@@ -156,20 +155,20 @@ always @(posedge clk, posedge rst) begin
     end
 end
 
-always @(*) begin
-    ram_we   = oram_cs && !cpu_wrn;
-    ram_addr = oram_cs ? cpu_AB : ( scan + {5'd0,offset} );
-end
-
+// always @(*) begin
+//     ram_we   = oram_cs && !cpu_wrn;
+//     ram_addr = oram_cs ? cpu_AB : ( scan + {5'd0,offset} );
+// end
+/*
 jtframe_ram #(.AW(9),.SIMFILE("obj.bin")) u_ram(
     .clk    ( clk         ),
     .cen    ( cen_Q       ),
     .data   ( cpu_dout    ),
     .addr   ( ram_addr    ),
     .we     ( ram_we      ),
-    .q      ( obj_dout    )
+    .q      ( oram_data    )
 );
-
+*/
 // pixel drawing
 reg  [ 3:0] pxl_cnt=0;
 wire [ 1:0] cnt_msb_next = pxl_cnt[3:2] + 2'd1;

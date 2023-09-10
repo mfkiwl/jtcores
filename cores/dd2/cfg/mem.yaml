@@ -58,3 +58,11 @@ sdram:
           addr_width: 16
           data_width: 8
           offset: MCU_OFFSET
+bram:
+  - name: oram
+    addr_width: 9
+    dual_port:
+      name: main
+      dout: obj_dout
+      we: oram_we
+      rw: true

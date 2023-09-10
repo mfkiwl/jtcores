@@ -132,16 +132,21 @@ func parse_file(core, filename string, cfg *MemConfig, args Args) bool {
 	// Update the MemType strings
 	for k, bank := range cfg.SDRAM.Banks {
 		ram_cnt := 0
-		for _, each := range bank.Buses {
+		for j, each := range bank.Buses {
 			if each.Rw {
 				ram_cnt++
 			}
+			if each.Data_width==0 { cfg.SDRAM.Banks[k].Buses[j].Data_width=8 }
 		}
 		if ram_cnt > 0 {
 			cfg.SDRAM.Banks[k].MemType = fmt.Sprintf("ram%d", ram_cnt)
 		} else {
 			cfg.SDRAM.Banks[k].MemType = "rom"
 		}
+	}
+	// Make data_width 8 if it is missing
+	for k, each := range cfg.BRAM {
+		if each.Data_width==0 { cfg.BRAM[k].Data_width=8 }
 	}
 	// check that gfx_sort expressions are supported
 	for _, bank := range cfg.SDRAM.Banks {
@@ -323,6 +328,13 @@ func check_banks( macros map[string]string, cfg *MemConfig ) {
 
 func fill_implicit_ports( macros map[string]string, cfg *MemConfig ) {
 	implicit := make( map[string]bool )
+	nonblank := func( a, b string ) string {
+		if a=="" {
+			return b
+		} else {
+			return a
+		}
+	}
 	// get implicit names
 	for _, bank := range cfg.SDRAM.Banks {
 		for _, each := range bank.Buses {
@@ -388,6 +400,12 @@ func fill_implicit_ports( macros map[string]string, cfg *MemConfig ) {
 				MSB:  each.Addr_width-1,
 				LSB:  each.Data_width>>4, // 8->0, 16->1
 			})
+			if each.Dual_port.Rw {
+				add( Port{
+					Name: nonblank( each.Dual_port.Din, each.Dual_port.Name+"_dout"),
+					MSB: each.Data_width-1,
+				})
+			}
 			if each.Dual_port.We != "" {
 				add( Port{
 					Name: each.Dual_port.We,
