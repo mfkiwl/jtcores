@@ -20,7 +20,6 @@
 // Object layer
 // Max 32 sprites per line
 
-
 module jtdd_obj(
     input              clk,
     input              rst,
@@ -51,8 +50,8 @@ reg  [ 4:0] maxline;
 wire [ 8:0] next_scan = scan + 9'd5;
 wire        scan_done = next_scan == 9'd510;
 
-reg  last_HBL, wait_mem;
-wire negedge_HBL = !HBL && last_HBL;
+reg  HBL_l, wait_mem;
+wire negedge_HBL = !HBL && HBL_l;
 
 reg  [ 7:0] scan_y, scan_attr, scan_attr2, scan_id, scan_x;
 wire [ 8:0] sumy = {1'b0, VPOS } + { 1'b0, scan_y };
@@ -67,14 +66,15 @@ assign oram_addr = scan + {5'd0,offset};
 
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
-        last_HBL <= 1'b0;
-        scan     <= 9'd0;
-        offset   <= 3'd0;
-        line     <= 1'b1;
-        state    <= 3'd0;
-        maxline  <= 5'd0;
+        HBL_l   <= 1'b0;
+        scan    <= 9'd0;
+        offset  <= 3'd0;
+        line    <= 1'b1;
+        state   <= 3'd0;
+        maxline <= 5'd0;
     end else begin
-        last_HBL <= HBL;
+        HBL_l <= HBL;
+        draw  <= 0;
         case( state )
             3'd0: if(negedge_HBL) begin // wait for non blanking
                 state    <= state+3'd1;
@@ -126,7 +126,7 @@ always @(posedge clk, posedge rst) begin
                 state   <= 3'd5;
             end
             3'd5: begin
-                scan_x  <= oram_data; // +4
+                scan_x  <= ~oram_data; // +4
                 `ifdef DD2
                 if( scan_attr[5:4]!=2'b00 )
                     scan_id[1:0] <= scan_id[1:0] + {1'b0, scan_y[4] };
@@ -135,11 +135,10 @@ always @(posedge clk, posedge rst) begin
                     scan_id[0] <= scan_id[0]^scan_y[4];
                 `endif
                 state <= 3'd6;
-                draw  <= 1;
             end
             3'd6: begin
-                draw <= 0;
                 if( !dr_busy ) begin
+                    draw <= 1;
                     if( !scan_done & ~&maxline ) begin
                         state    <= 3'd1;
                         offset   <= 3'd0; // try next object
@@ -166,9 +165,21 @@ wire [ 4:0] id_top= {1'b0, scan_attr2[3:0]};
 wire [ 3:0] pal   = scan_attr2[7:4];
 `endif
 
+wire [31:0] sorted =
+{rom_data[12], rom_data[13], rom_data[14], rom_data[15], rom_data[28], rom_data[29], rom_data[30], rom_data[31],
+ rom_data[ 8], rom_data[ 9], rom_data[10], rom_data[11], rom_data[24], rom_data[25], rom_data[26], rom_data[27],
+ rom_data[ 4], rom_data[ 5], rom_data[ 6], rom_data[ 7], rom_data[20], rom_data[21], rom_data[22], rom_data[23],
+ rom_data[ 0], rom_data[ 1], rom_data[ 2], rom_data[ 3], rom_data[16], rom_data[17], rom_data[18], rom_data[19]  };
+wire aux;
+
+assign rom_addr[2] = ~aux;
+
 jtframe_objdraw #(
     .CW     ( 13 ),
-    .HJUMP  (  1 )
+    .HJUMP  (  1 ),
+    .LATCH  (  1 ),
+    .SWAPH  (  0 ),
+    .PACKED (  0 )
 ) u_draw (
     .rst        ( rst       ),
     .clk        ( clk       ),
@@ -190,10 +201,10 @@ jtframe_objdraw #(
     .vflip      ( vflip     ),
     .pal        ( pal       ),
 
-    .rom_addr   ( rom_addr  ),
+    .rom_addr   ( { rom_addr[19:7], aux, rom_addr[3+:4] } ),
     .rom_cs     ( rom_cs    ),
     .rom_ok     ( rom_ok    ),
-    .rom_data   ( rom_data  ),
+    .rom_data   ( sorted    ),
 
     .pxl        ( pxl       )
 );
