@@ -24,11 +24,9 @@ wire       [12:0]  cpu_AB;
 wire               cram_cs, vram_cs, oram_cs, pal_cs;
 wire               cpu_wrn;
 wire       [ 7:0]  cpu_dout;
-wire               cen_E, cen_Q;
 wire       [ 7:0]  char_dout, scr_dout, obj_dout, pal_dout;
 // video signals
-wire               VBL, IMS, H8;
-wire               flip;
+wire               VBL, IMS, H8, flip, nc;
 // Sound
 wire               mcu_rstb, snd_irq;
 wire       [ 7:0]  snd_latch;
@@ -220,7 +218,7 @@ jtdd_video u_video(
     .flip         (  flip            ),
     .H8           (  H8              ),
     // ROM access
-    .char_addr    (  char_addr       ),
+    .char_addr    ( {nc,char_addr}   ),
     .char_data    (  char_data       ),
     .char_ok      (  char_ok         ),
     .scr_addr     (  scr_addr        ),

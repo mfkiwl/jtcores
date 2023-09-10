@@ -39,7 +39,7 @@ sdram:
       buses:
         -
           name: char
-          addr_width: 16 # DD1 only uses 15, DD2 uses 16
+          addr_width: 15 # DD1 only uses 15, DD2 uses 16
           data_width: 8
           gfx_sort: hhvvv
         -
@@ -47,14 +47,14 @@ sdram:
           addr_width: 18
           data_width: 16
           offset: SCR_OFFSET
-          gfx_sort: hhvvvvxx
+          gfx_sort: hhvvvvx
     -
       buses:
         -
           name: obj
           addr_width: 20
           data_width: 16
-          gfx_sort: hhvvvvxx
+          gfx_sort: hhvvvvx
         -
           name: mcu
           addr_width: 14
