@@ -41,9 +41,9 @@ assign turbo      = `ifdef ALWAYS_TURBO 1 `else status[13] `endif ;
 assign dip_flip   = flip;
 assign debug_view = 0;
 assign char_cs    = LVBL;
-assign obj_cs     = LVBL;
 assign scr_cs     = LVBL;
 assign main_dout  = cpu_dout;
+assign oram_we    = oram_cs & ~cpu_wrn;
 
 `ifndef NOMAIN
 wire main_cen = turbo ? 1'd1 : cen12;
@@ -107,7 +107,7 @@ jtdd_main u_main(
 assign main_cs   = 1'b0;
 assign main_addr = 18'd0;
 assign cram_cs   = 1'b0;
-assign vram_cs    = 1'b0;
+assign vram_cs   = 1'b0;
 assign oram_cs   = 1'b0;
 assign pal_cs    = 1'b0;
 assign mcu_cs    = 1'b0;
@@ -218,7 +218,7 @@ jtdd_video u_video(
     .H8           (  H8              ),
     // Video RAM
     .oram_addr    ( oram_addr        ),
-    .oram_data    ( oram_data        ),
+    .oram_data    ( oram_dout        ),
     // ROM access
     .char_addr    ( {nc,char_addr}   ),
     .char_data    (  char_data       ),
@@ -226,6 +226,7 @@ jtdd_video u_video(
     .scr_addr     (  scr_addr        ),
     .scr_data     (  scr_data        ),
     .scr_ok       (  scr_ok          ),
+    .obj_cs       (  obj_cs          ),
     .obj_addr     (  obj_addr        ),
     .obj_data     (  obj_data        ),
     .obj_ok       (  obj_ok          ),

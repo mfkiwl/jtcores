@@ -45,7 +45,6 @@ assign turbo      = status[13];
 assign dip_flip   = flip;
 assign debug_view = 0;
 assign char_cs    = LVBL;
-assign obj_cs     = LVBL;
 assign scr_cs     = LVBL;
 assign main_dout  = cpu_dout;
 assign oram_we    = oram_cs & ~cpu_wrn;
@@ -243,6 +242,7 @@ jtdd_video u_video(
     .scr_addr     (  scr_addr        ),
     .scr_data     (  scr_data        ),
     .scr_ok       (  scr_ok          ),
+    .obj_cs       (  obj_cs          ),
     .obj_addr     (  obj_addr        ),
     .obj_data     (  obj_data        ),
     .obj_ok       (  obj_ok          ),

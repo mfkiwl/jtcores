@@ -519,9 +519,9 @@ func fill_gfx_sort( macros map[string]string, cfg *MemConfig ) {
 				// when <interleave> is used in the MRA, that bit will be 1 for 16-bit interleaves
 				// and 2 for 32-bit interleaves
 				// additionally the user can add one or two x to the gfx code to increase bit count further
-				b0 = each.Data_width>>4
-				if strings.HasSuffix(each.Gfx,"x")  { b0++ }
-				if strings.HasSuffix(each.Gfx,"xx") { b0++ }
+				if strings.HasSuffix(each.Gfx,"x")  { b0=1 }
+				if strings.HasSuffix(each.Gfx,"xx") { b0=2 }
+				if b0==0 { b0 = each.Data_width>>4 }
 				new_range := ""
 				if len(offsets)>0 {
 					addr0 := fmt.Sprintf("(%s)",strings.Join(offsets,"+"))

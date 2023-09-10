@@ -47,16 +47,24 @@ sdram:
           addr_width: 18
           data_width: 16
           offset: SCR_OFFSET
-          gfx_sort: hhvvvv
+          gfx_sort: hhvvvvx
     -
       buses:
         -
           name: obj
           addr_width: 20
-          data_width: 16
-          gfx_sort: hhvvvv
+          data_width: 32
+          gfx_sort: hhvvvvx
         -
           name: mcu
           addr_width: 14
           data_width: 8
           offset: MCU_OFFSET
+bram:
+  - name: oram
+    addr_width: 9
+    dual_port:
+      name: main
+      dout: obj_dout
+      we: oram_we
+      rw: true

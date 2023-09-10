@@ -30,6 +30,7 @@ jtframe:
   - from: video
     get:
       - jtframe_vtimer.v
+      - jtframe_obj.yaml
   - from: sdram
     get:
       - jtframe_sdram64.yaml

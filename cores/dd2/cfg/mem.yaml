@@ -51,7 +51,7 @@ sdram:
         -
           name: obj
           addr_width: 20
-          data_width: 16
+          data_width: 32
           gfx_sort: hhvvvv
         -
           name: mcu

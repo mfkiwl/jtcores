@@ -44,9 +44,10 @@ module jtdd_video(
     input      [15:0]  scr_data,
     input              scr_ok,
     // Object
-    output     [18:0]  obj_addr,
-    input      [15:0]  obj_data,
+    output     [19:2]  obj_addr,
+    input      [31:0]  obj_data,
     input              obj_ok,
+    output             obj_cs,
     output     [ 8:0]  oram_addr,
     input      [ 7:0]  oram_data,
     // video signals
@@ -163,18 +164,20 @@ jtdd_obj u_obj(
     .rst         ( rst              ),
     .pxl_cen     ( pxl_cen          ),
     // screen
-    .HPOS        ( hdump[7:0]       ),
+    .hdump       ( hdump            ),
     .VPOS        ( vdump[7:0]       ),
     .flip        ( flip             ),
     .HBL         ( HBL              ),
+    .hs          ( HS               ),
     // Video RAM
     .oram_addr   ( oram_addr        ),
     .oram_data   ( oram_data        ),
     // ROM access
+    .rom_cs      ( obj_cs           ),
     .rom_addr    ( obj_addr         ),
     .rom_data    ( obj_data         ),
     .rom_ok      ( obj_ok           ),
-    .obj_pxl     ( obj_pxl          ),
+    .pxl         ( obj_pxl          ),
 
     .debug_bus   ( debug_bus        )
 );
