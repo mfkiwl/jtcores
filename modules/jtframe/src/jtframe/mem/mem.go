@@ -147,7 +147,7 @@ func parse_file(core, filename string, cfg *MemConfig, args Args) bool {
 	for _, bank := range cfg.SDRAM.Banks {
 		for _, each := range bank.Buses {
 			switch each.Gfx {
-				case "", "hhvvv", "hhvvvv", "hhvvvx", "hhvvvvx": break
+				case "", "hhvvv", "hhvvvv", "hhvvvx", "hhvvvvx", "hhvvvxx", "hhvvvvxx": break
 				default: {
 					fmt.Printf("Unsupported gfx_sort %d\n", each.Gfx)
 					return false
@@ -495,8 +495,9 @@ func fill_gfx_sort( macros map[string]string, cfg *MemConfig ) {
 			appendif(&offsets,fmt.Sprintf("JTFRAME_BA%d_START",k))
 			for j, each := range bank.Buses {
 				if each.Offset != "" { offsets = append(offsets, fmt.Sprintf("(%s<<1)",each.Offset) )}
-				if each.Gfx!=match && each.Gfx!=(match+"x") { continue }
-				if strings.HasSuffix(each.Gfx,"x") { b0 = 1 }
+				if each.Gfx!=match && each.Gfx!=(match+"x") && each.Gfx!=(match+"xx") { continue }
+				if strings.HasSuffix(each.Gfx,"x")  { b0 = 1 }
+				if strings.HasSuffix(each.Gfx,"xx") { b0 = 2 }
 				new_range := ""
 				if len(offsets)>0 {
 					addr0 := fmt.Sprintf("(%s)",strings.Join(offsets,"+"))
