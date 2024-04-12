@@ -717,11 +717,8 @@ jtframe_sdram64 #(
     .PROG_LEN     ( PROG_LEN      ),
     .MISTER       ( MISTER        ),
 `ifdef JTFRAME_SDRAM96
-    .HF(1),
-    .SHIFTED(0)
-`else
-    .HF(0)
-`endif
+    .HF           ( 1             ) `else
+    .HF           ( 0             ) `endif
 ) u_sdram(
     .rst        ( rst           ),
     .clk        ( clk_rom       ), // 96MHz = 32 * 6 MHz -> CL=2
