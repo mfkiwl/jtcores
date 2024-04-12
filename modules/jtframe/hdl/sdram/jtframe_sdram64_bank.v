@@ -22,7 +22,6 @@ module jtframe_sdram64_bank #(
     parameter AW=22,
               HF=1,     // 1 for HF operation (idle cycles), 0 for LF operation
                         // HF operation starts at 66.6MHz (1/15ns)
-              SHIFTED      =0,
               AUTOPRECH    =0,
               PRECHARGE_ALL=0,
               BALEN        =64, // 16, 32 or 64 bits
@@ -81,9 +80,9 @@ localparam IDLE    = 0,
            // AUTOPRECH 1+2(1)
            PRE_ACT = HF ? 3:2,
            ACT     = PRE_ACT+1,
-           PRE_RD  = PRE_ACT + (HF ? 3:2),
+           PRE_RD  = PRE_ACT + (HF ? 2:1),
            READ    = PRE_RD+1,
-           DST     = READ + (SHIFTED ? 1 : 2) ,
+           DST     = READ + 2,
            DTICKS  = BURSTLEN==64 ? 4 : (BURSTLEN==32?2:1),
            BUSY    = DST+(DTICKS-1),
            RDY     = DST + (BALEN==16 ? 0 : (BALEN==32? 1 : 3)),

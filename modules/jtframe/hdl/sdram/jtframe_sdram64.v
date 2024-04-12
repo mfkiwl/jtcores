@@ -22,7 +22,6 @@ module jtframe_sdram64 #(
     parameter AW=22,
               HF=1,     // 1 for HF operation (idle cycles), 0 for LF operation
                         // HF operation starts at 66.6MHz (1/15ns)
-              SHIFTED =0,
               BA0_LEN =64, // 1=16 bits, 2=32 bits, 4=64 bits
               BA1_LEN =64,
               BA2_LEN =64,
@@ -297,7 +296,6 @@ jtframe_sdram64_rfsh #(.HF(HF),.RFSHCNT(RFSHCNT)) u_rfsh(
 jtframe_sdram64_bank #(
     .AW       ( AW      ),
     .HF       ( HF      ),
-    .SHIFTED  ( SHIFTED ),
     .BALEN    ( PROG_LEN),
     .BURSTLEN ( BURSTLEN),
     // The programmer always precharges all banks
@@ -348,7 +346,6 @@ jtframe_sdram64_bank #(
 jtframe_sdram64_bank #(
     .AW       ( AW            ),
     .HF       ( HF            ),
-    .SHIFTED  ( SHIFTED       ),
     .BURSTLEN ( BURSTLEN      ),
     .BALEN    ( BA0_LEN       ),
     .AUTOPRECH( BA0_AUTOPRECH )
@@ -396,7 +393,6 @@ jtframe_sdram64_bank #(
 jtframe_sdram64_bank #(
     .AW       ( AW            ),
     .HF       ( HF            ),
-    .SHIFTED  ( SHIFTED       ),
     .BURSTLEN ( BURSTLEN      ),
     .BALEN    ( BA1_LEN       ),
     .AUTOPRECH( BA1_AUTOPRECH )
@@ -443,7 +439,6 @@ jtframe_sdram64_bank #(
 jtframe_sdram64_bank #(
     .AW       ( AW            ),
     .HF       ( HF            ),
-    .SHIFTED  ( SHIFTED       ),
     .BURSTLEN ( BURSTLEN      ),
     .BALEN    ( BA2_LEN       ),
     .AUTOPRECH( BA2_AUTOPRECH )
@@ -490,7 +485,6 @@ jtframe_sdram64_bank #(
 jtframe_sdram64_bank #(
     .AW       ( AW            ),
     .HF       ( HF            ),
-    .SHIFTED  ( SHIFTED       ),
     .BURSTLEN ( BURSTLEN      ),
     .BALEN    ( BA3_LEN       ),
     .AUTOPRECH( BA3_AUTOPRECH )
