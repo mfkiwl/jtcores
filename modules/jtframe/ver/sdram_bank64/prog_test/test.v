@@ -3,7 +3,7 @@
 module test;
 
 parameter BANK1=1, BANK2=1, BANK3=1,
-          IDLE=50, SHIFTED=0, MAXA=21;
+          IDLE=50, MAXA=21;
 parameter BA0_LEN=64, BA1_LEN=64, BA2_LEN=64, BA3_LEN=64;
 
 `ifndef PERIOD
@@ -120,7 +120,6 @@ end
 jtframe_sdram64 #(
     .AW     ( 22      ),
     .HF     ( HF      ),
-    .SHIFTED( SHIFTED ),
     .BA0_LEN( BA0_LEN ),
     .BA1_LEN( BA1_LEN ),
     .BA2_LEN( BA2_LEN ),

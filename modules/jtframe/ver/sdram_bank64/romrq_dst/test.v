@@ -2,7 +2,7 @@
 
 module test;
 
-parameter HF=1, SHIFTED=1,PERIOD=20, SIMLEN=1;
+parameter HF=1, PERIOD=20, SIMLEN=1;
 
 reg         rst, clk, clk_sdram;
 wire [15:0] data_read;
@@ -172,7 +172,6 @@ mt48lc16m16a2 sdram(
 jtframe_sdram64 #(
     .AW     ( 22      ),
     .HF     ( HF      ),
-    .SHIFTED( SHIFTED ),
     .BA0_LEN( BA0_LEN ),
     .BA1_LEN( BA1_LEN ),
     .BA2_LEN( BA2_LEN ),
