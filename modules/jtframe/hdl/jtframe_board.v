@@ -720,12 +720,7 @@ jtframe_sdram64 #(
     .HF(1),
     .SHIFTED(0)
 `else
-    .HF(0),
-    `ifdef JTFRAME_180SHIFT
-        .SHIFTED(0)
-    `else
-        .SHIFTED(1)
-    `endif
+    .HF(0)
 `endif
 ) u_sdram(
     .rst        ( rst           ),

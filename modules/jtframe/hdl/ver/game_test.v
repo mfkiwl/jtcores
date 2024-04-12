@@ -309,15 +309,10 @@ jtframe_sdram64 #(
     .BA3_WEN      ( 1             ), `endif
 `ifdef JTFRAME_SDRAM96
     .HF(1),
-    .SHIFTED(1)     // This is different from jtframe_board's in order to work
+    .SHIFTED(0)     // This is different from jtframe_board's in order to work
                     // in the verilator test bench
 `else
-    .HF(0),
-    `ifdef JTFRAME_180SHIFT
-        .SHIFTED(0)
-    `else
-        .SHIFTED(1)
-    `endif
+    .HF(0)
 `endif
 ) u_sdram(
     .rst        ( sdram_rst     ),
